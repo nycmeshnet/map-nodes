@@ -1,6 +1,12 @@
 # NYC Mesh Nodes
 ___Generate GeoJSON from google spreadsheet___
 
+This is a fork of https://github.com/nycoliver/nycmesh-nodes
+
+The paths have been changed to work with the nycmesh.net site
+
+The paths assume this folder, "map-nodes", and the "nycmeshnet.github.io" folder are both in the top level of the same directory. It will write directly to ../nycmeshnet.github.io/map/nodes. It will also look for pictures in ../nycmeshnet.github.io/panorama/
+
 ## Setup Instructions
 
 __Dependencies__
