@@ -47,4 +47,4 @@ Writes a GeoJSON file to ./nodes.json
 
 ### Panoramas
 
-The script will look for photos in the ./panoramas folder
+The script will look for photos in the ../nycmeshnet.github.io/panorama/ folder
