@@ -28,12 +28,12 @@ const statusTypes = {
 
 const rowToFeature = (row) => {
   const id = row[1]
-  const lat = parseFloat(row[11])
-  const lng = parseFloat(row[12])
-  const street = row[15]
-  const neighborhood = row[20]
+  const lat = parseFloat(row[12])
+  const lng = parseFloat(row[13])
+  const street = row[16]
+  const neighborhood = row[21]
   const borough = row[9]
-  const status = statusTypes[row[13]]
+  const status = statusTypes[row[14]]
   // console.log(`${status} ${lat},${lng} ${street}, ${neighborhood}, ${borough}`)
   return {
     type: "Feature",
