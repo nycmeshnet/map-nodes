@@ -1,4 +1,5 @@
 credentials.json
+spreadsheetid.json
 node_modules
 nodes.json
 .DS_Store
