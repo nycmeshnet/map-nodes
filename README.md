@@ -37,6 +37,13 @@ __Google Sheets API__
   - note your service account's email address (also available in the JSON key file)
 5. Share the doc (or docs) with your service account using the email noted above
 6.  Move the JSON key file to ./credentials.json (put it in the root of this project)
+7.  Create file ./spreadsheetid.json and place the google sheet id, e.g.   
+```
+{  
+	"id": "1234qwer1234qwerasdfqwer1234qwerASDF1234qwerr"  
+}
+```
+
 
 ## Usage
 
