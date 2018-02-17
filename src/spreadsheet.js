@@ -36,8 +36,12 @@ function generateJson() {
 
     var statusCounts = {};
 
-    var features = rows.map(pointFromRow).filter(removeAbandoned);
+    // Generate features
+    var features = rows.map(featureFromRow).filter(removeAbandoned);
 
+    // Add features to active / potential arrays,
+    // create map of nodeId -> coordinates,
+    // and calculate status counts
     features.forEach(feature => {
       const { status, id } = feature.properties;
       if (status == "Installed") {
@@ -61,6 +65,68 @@ function generateJson() {
     writeFile(sitepath + "active.json", active);
     writeFile(sitepath + "potential.json", potential);
   });
+}
+
+function featureFromRow(row, index) {
+  const { status, latlng, rooftopaccess, notes } = row;
+  const id = index + 2; // correcting for title row and starts at 0
+
+  var rowCoordinates = latlng
+    .replace(/ /g, "")
+    .split(",")
+    .reverse()
+    .map(function(c) {
+      return parseFloat(c);
+    });
+
+  if (!rowCoordinates[0] || !rowCoordinates[1]) {
+    console.log("Node " + id + " is missing latlng");
+    return null;
+  }
+
+  var feature = {
+    type: "Feature",
+    properties: {
+      id: id,
+      status: status,
+      notes: notes
+    },
+    geometry: {
+      coordinates: rowCoordinates,
+      type: "Point"
+    }
+  };
+
+  if (notes) {
+    feature.properties.notes = notes;
+  }
+
+  if (rooftopaccess && rooftopaccess != "") {
+    feature.properties.roof = "roof";
+  } else {
+    feature.properties.roof = "";
+  }
+
+  // get panoramas <id>.jpg <id>a.jpg up to <id>z.jpg
+  var panLetter = "";
+  var panArray = [];
+  for (var i = 0; i < 27; i++) {
+    var fname = id + panLetter + ".jpg";
+    var fname_png = id + panLetter + ".png";
+    if (fs.existsSync(panopath + fname)) {
+      panArray.push(fname);
+    } else if (fs.existsSync(panopath + fname_png)) {
+      panArray.push(fname_png);
+    } else {
+      break;
+    }
+    panLetter = String.fromCharCode(97 + i); // a through z
+  }
+  if (panArray.length > 0) {
+    feature.properties.panoramas = panArray;
+  }
+
+  return feature;
 }
 
 // merge markers with same coordinates
@@ -115,6 +181,76 @@ function clusterSameLoc(nodeArray) {
   }
 }
 
+function removeAbandoned(feature) {
+  if (!feature) return false;
+  //added Unsubscribe bh
+  if (
+    feature.properties.status == "Abandoned" ||
+    feature.properties.status == "Unsubscribe"
+  )
+    return false;
+  return true;
+}
+
+function generateLinks() {
+  console.log("Fetching links...");
+  doc.getRows(4, function(err, rows) {
+    //third worksheet is nodes
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    const linkFeatures = rows.map(linkFromRow).filter(link => link);
+
+    const links = {
+      type: "FeatureCollection",
+      features: linkFeatures
+    };
+    writeFile(sitepath + "links.json", links);
+  });
+}
+
+function linkFromRow(row) {
+  // get coordinates
+  // console.log(coordinates[row.from])
+  if (row && row.from && row.to && row.status) {
+    const fromLatLng = coordinates[row.from];
+    const toLatLng = coordinates[row.to];
+
+    // Validate coordinates
+    if (
+      !fromLatLng ||
+      !fromLatLng[0] ||
+      !fromLatLng[1] ||
+      !toLatLng ||
+      !toLatLng[0] ||
+      !toLatLng[1]
+    ) {
+      return;
+    }
+
+    const feature = {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: [fromLatLng, toLatLng]
+      },
+      properties: {
+        status: row.status
+      }
+    };
+    return feature;
+  }
+}
+
+function writeFile(path, json) {
+  fs.writeFile(path, JSON.stringify(json), function(err) {
+    if (err) console.error("Error writing to " + path, err);
+    else console.log("GeoJSON written to " + path);
+  });
+}
+
 function printStats(statusCounts) {
   console.log(
     (statusCounts["total"] || 0) +
@@ -128,120 +264,6 @@ function printStats(statusCounts) {
       (statusCounts[""] || 0) +
       " no status)"
   );
-}
-
-function generateLinks() {
-  console.log("Fetching links...");
-  doc.getRows(4, function(err, rows) {
-    //third worksheet is nodes
-    if (err) {
-      console.log(err);
-      return;
-    }
-    const links = {
-      type: "FeatureCollection",
-      features: rows.map(linkFromRow)
-    };
-    writeFile(sitepath + "links.json", links);
-  });
-}
-
-function removeAbandoned(feature) {
-  if (!feature) return false;
-  //added Unsubscribe bh
-  if (
-    feature.properties.status == "Abandoned" ||
-    feature.properties.status == "Unsubscribe"
-  )
-    return false;
-  return true;
-}
-
-function writeFile(path, json) {
-  fs.writeFile(path, JSON.stringify(json), function(err) {
-    if (err) console.error("Error writing to " + path, err);
-    else console.log("GeoJSON written to " + path);
-  });
-}
-
-function linkFromRow(row) {
-  // get coordinates
-  // console.log(coordinates[row.from])
-  if (row && row.from && row.to && row.status) {
-    var feature = {
-      type: "Feature",
-      geometry: {
-        type: "LineString",
-        coordinates: [coordinates[row.from], coordinates[row.to]]
-      },
-      properties: {
-        status: row.status
-      }
-    };
-    return feature;
-  }
-}
-
-function pointFromRow(row, index) {
-  const { status, latlng, rooftopaccess, notes } = row;
-  const id = index + 2; // correcting for title row and starts at 0
-
-  var coordinates = latlng
-    .replace(/ /g, "")
-    .split(",")
-    .reverse()
-    .map(function(c) {
-      return parseFloat(c);
-    });
-
-  if (!coordinates[0] || !coordinates[1]) {
-    console.log("Node " + id + " is missing latlng");
-    return null;
-  }
-
-  var feature = {
-    type: "Feature",
-    properties: {
-      id: id,
-      status: status,
-      notes: notes
-    },
-    geometry: {
-      coordinates: coordinates,
-      type: "Point"
-    }
-  };
-
-  if (notes) {
-    feature.properties.notes = notes;
-  }
-
-  if (rooftopaccess && rooftopaccess != "") {
-    feature.properties.roof = "roof";
-  } else {
-    feature.properties.roof = "";
-  }
-
-  // get panoramas <id>.jpg <id>a.jpg up to <id>z.jpg
-  var panLetter = "";
-  var panArray = [];
-  for (var i = 0; i < 27; i++) {
-    var fname = id + panLetter + ".jpg";
-    var fname_png = id + panLetter + ".png";
-    if (fs.existsSync(panopath + fname)) {
-      panArray.push(fname);
-    } else if (fs.existsSync(panopath + fname_png)) {
-      panArray.push(fname_png);
-    } else {
-      break;
-    }
-    panLetter = String.fromCharCode(97 + i); // a through z
-  }
-  if (panArray.length > 0) {
-    feature.properties.panoramas = panArray;
-  }
-
-  return feature;
 }
 
 module.exports = () => setAuth(generateJson);
