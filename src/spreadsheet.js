@@ -161,11 +161,11 @@ function pointFromRow(row, index) {
   const { status, latlng, rooftopaccess, notes } = row;
   const id = index+2; // correcting for title row and starts at 0
 
-  var coordinates = latlng.split(',').reverse().map(function(c) {
+  var coordinates = latlng.replace(/ /g, "").split(',').reverse().map(function(c) {
     return parseFloat(c)
   })
 
-  if (!coordinates[0]) {
+  if (!coordinates[0] || !coordinates[1]) {
     console.log('Node '+id+' is missing latlng')
     return null
   }
