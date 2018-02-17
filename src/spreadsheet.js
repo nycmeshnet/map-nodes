@@ -227,6 +227,7 @@ function linkFromRow(row) {
       !toLatLng[0] ||
       !toLatLng[1]
     ) {
+      console.log(`Link from node ${row.from} to ${row.to} has invalid coordinates!`)
       return;
     }
 
