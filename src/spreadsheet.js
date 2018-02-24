@@ -253,8 +253,7 @@ function writeFile(path, json) {
 }
 
 function printStats(statusCounts) {
-  console.log(
-    (statusCounts["total"] || 0) +
+  var statsText = 	(statusCounts["total"] || 0) +
       " nodes (" +
       (statusCounts["Installed"] || 0) +
       " active, " +
@@ -264,7 +263,8 @@ function printStats(statusCounts) {
       " interested, " +
       (statusCounts[""] || 0) +
       " no status)"
-  );
+  console.log(statsText)
+  writeFile(sitepath + 'stats.txt', statsText) // added by brian
 }
 
 module.exports = () => setAuth(generateJson);
