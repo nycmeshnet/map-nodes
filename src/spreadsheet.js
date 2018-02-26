@@ -252,8 +252,15 @@ function writeFile(path, json) {
   });
 }
 
+function writeStringToFile(path, json) {
+  fs.writeFile(path, json, function(err) {
+    if (err) console.error("Error writing to " + path, err);
+    else console.log("GeoJSON written to " + path);
+  });
+}
+
 function printStats(statusCounts) {
-  var statsText = 	(statusCounts["total"] || 0) +
+  var statsText = (statusCounts["total"] || 0) +
       " nodes (" +
       (statusCounts["Installed"] || 0) +
       " active, " +
@@ -263,8 +270,9 @@ function printStats(statusCounts) {
       " interested, " +
       (statusCounts[""] || 0) +
       " no status)"
+  var mapText = (statusCounts["Installed"] || 0) + " active nodes"
   console.log(statsText)
-  writeFile(sitepath + 'stats.txt', statsText) // added by brian
+  writeStringToFile(sitepath + 'stats.txt', mapText) // added by brian
 }
 
 module.exports = () => setAuth(generateJson);
