@@ -31,8 +31,8 @@ function generateJson() {
       return;
     }
 
-    var active = { type: "FeatureCollection", features: [] },
-      potential = { type: "FeatureCollection", features: [] };
+    var active = { type: "FeatureCollection", features: [] };
+    potential = { type: "FeatureCollection", features: [] };
 
     var statusCounts = {};
 
@@ -270,9 +270,13 @@ function printStats(statusCounts) {
       " interested, " +
       (statusCounts[""] || 0) +
       " no status)"
-  var mapText = (statusCounts["Installed"] || 0) + " active nodes"
+  //var mapText = (statusCounts["Installed"] || 0) + " active nodes"
   console.log(statsText)
-  writeStringToFile(sitepath + 'stats.txt', mapText) // added by brian
+  //writeStringToFile(sitepath + 'stats.txt', mapText) 
+  // added by brian 2018-4-10
+  var activePotential = "var activeNodes = "+(statusCounts["Installed"] || 0)
+  activePotential = activePotential+"\n"+"var potentialNodes = "+ ((statusCounts["total"] || 0) - (statusCounts["Installed"] || 0))
+  writeStringToFile(sitepath + 'stats.js', activePotential)
 }
 
 module.exports = () => setAuth(generateJson);
