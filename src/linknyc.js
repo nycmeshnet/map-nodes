@@ -13,7 +13,7 @@ const generateGeoJson = () => {
         type: "FeatureCollection",
         features: data.map(rowToFeature)
       }
-      writeFile("../nycmeshnet.github.io/map/nodes/linkNYC.json", geojson)
+      writeFile("../nycmeshnet.github.io/map/nodes/linkNYC-new.json", geojson)
     })
     .catch(err => {
       console.log(err);
