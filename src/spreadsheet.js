@@ -188,9 +188,11 @@ function removeAbandoned(feature) {
     feature.properties.status == "Abandoned" ||
     feature.properties.status == "Not Interested" ||
     feature.properties.status == "Unsubscribe"
-  )
+  ) {
     return false;
+  }
   return true;
+}
 
 function removeNoStatus(feature) {
   if (!feature) return false
